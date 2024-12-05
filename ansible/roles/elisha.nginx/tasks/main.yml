@@ -1,0 +1,24 @@
+---
+# tasks file for elisha.nginx
+- name: Task to Install NginxWebserver
+  apt:
+    name: nginx
+    state: present
+  
+- name: Starting NginxWebserver
+  service:
+    name: nginx
+    state: restarted
+
+
+- name: Remove apache2
+  apt:
+    name: apache2
+    state: absent
+
+#create configuration template for nginx so that it forwards request
+- name: Create nginx configuration
+  template:
+    src: templates/default
+    dest: /etc/nginx/sites-available/default
+    

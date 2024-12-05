@@ -1,0 +1,62 @@
+upstream php {
+server unix:/run/php/php8.3-fpm.sock;
+}
+
+server {
+    server_name www.server1.com;
+    root /var/www/www.server1.com;
+    index index.php;
+
+    # Favicon
+    location = /favicon.ico {
+        log_not_found off;
+        access_log off;
+    }
+
+    # Robots.txt
+    location = /robots.txt {
+        allow all;
+        log_not_found off;
+        access_log off;
+    }
+
+    # Deny hidden files (starting with a dot)
+    location ~ /\. {
+        deny all;
+    }
+
+    # Deny PHP execution in certain directories
+    location ~* /(?:uploads|files)/.*\.php$ {
+        deny all;
+    }
+
+    # Handle requests
+    location / {
+        try_files $uri $uri/ /index.php?$args;
+    }
+
+    # Permanent redirect for /wp-admin
+    rewrite /wp-admin$ $scheme://$host$uri/ permanent;
+
+    # Static files caching
+    location ~* \.(ogg|ogv|svg|svgz|eot|otf|woff|mp4|ttf|rss|atom|jpg|jpeg|gif|png|ico|zip|tgz|gz|rar|bz2|doc|xls|exe|ppt|tar|mid|midi|wav|bmp|rtf)$ {
+        access_log off;
+        log_not_found off;
+        expires max;
+    }
+
+    # PHP handling
+    location ~ [^/]\.php(/|$) {
+        fastcgi_split_path_info ^(.+?\.php)(/.*)$;
+
+        # Return 404 if the PHP file does not exist
+        if (!-f $document_root$fastcgi_script_name) {
+            return 404;
+        }
+
+        include fastcgi_params;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        fastcgi_pass php;
+    }
+}

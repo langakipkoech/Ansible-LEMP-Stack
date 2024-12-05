@@ -1,0 +1,78 @@
+---
+- name: Install wordpress
+  become: true
+  gather_facts: true
+  hosts: all
+  roles:
+    - elisha.nginx
+    - elisha.php
+    - elisha.mysql
+    - role: elisha.wordpress
+      database_name: db_elisha
+      database_user: elisha
+      database_pass: elisha
+      
+
+  tasks:
+    - name: Install required packages and tools
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+          - unzip
+    - name:  Copy wordpress to environment
+      copy: 
+        src: /home/user/Desktop/Summer/files/wordpress.zip
+        dest: /tmp/wordpress.zip
+
+
+    - name: Ensure destination directory exists
+      file:
+        path: /tmp/wordpress
+        state: directory
+
+    - name: Unzip wordpress
+      unarchive:
+        src: /tmp/wordpress.zip
+        dest: /tmp/wordpress
+        remote_src: yes
+        creates: /tmp/wordpress/wp-settings.php
+
+    - name: Create project folder
+      file: 
+        path: /var/www/www.server1.com  # Use 'path' instead of 'dest' for the file module
+        state: directory
+
+    - name: Copy WordPress files
+      command: 
+        cmd: cp -a /tmp/wordpress/. /var/www/www.server1.com 
+        creates: /var/www/www.server1.com/wp-settings.php  # Adjusted for correct indentation
+
+
+  #create dedicated MySQL database user
+    - name: Create Wordpress MYQSL database
+      mysql_db:
+        name: wordpress
+        state: present
+
+    - name: create wordpress MYSQL user
+      mysql_user:
+        name: wordpress
+        host: localhost
+        password: bananas
+        priv: "wordpress.*:ALL"
+        state: present
+      
+  #create config files
+    - name: create wp-config
+      template:
+        src: elisha.wordpress/templates/wp-config.php
+        dest: /var/www/www.server1.com/wp-config.php
+
+  handlers:
+    - name: restart nginx
+      service:
+        name: nginx
+        state: restarted
+  #wordpress
+  

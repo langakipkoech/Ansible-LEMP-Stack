@@ -1,0 +1,38 @@
+---
+# MySQL Installation and Security
+
+- name: Update the apt cache
+  apt:
+    update_cache: yes
+
+- name: Install MySQL
+  apt:
+    name: "{{ item }}"
+    state: present
+  loop:
+    - mysql-server
+    - python3-mysqldb
+
+- name: Set the default root password
+  set_fact:
+    mysql_root_password: "new_password"  # Replace '1234' with the desired password
+
+- name: Output new root password
+  debug:
+    msg: "New root password is {{ mysql_root_password }}"
+
+- name: Debug ansible_hostname
+  debug:
+    msg: "The ansible_hostname is {{ ansible_hostname }}"
+
+- name: Update root password
+  mysql_user:
+    name: root
+    host: "{{ ansible_hostname }}"
+    password: "{{ mysql_root_password }}"
+    state: present  # Ensures that the user is present with the defined password
+
+- name: Create my.cnf
+  template:
+    src: my.cnf.j2
+    dest: /root/.my.cnf

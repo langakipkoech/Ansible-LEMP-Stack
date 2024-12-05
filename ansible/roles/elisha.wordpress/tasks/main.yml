@@ -1,0 +1,19 @@
+---
+# tasks file for elisha.wordpress
+# tasks that create password for the database
+
+- name: Create Wordpress MyQL database
+  mysql_db:
+    name: "{{ database_name }}"
+    state: present
+
+- name: Create wordpress mysql user
+  mysql_user:
+    name: "{{ database_user }}"
+    host: localhost
+    password: "{{ database_pass }}"
+    priv: "{{ database_name }}.*:ALL"
+
+
+
+
