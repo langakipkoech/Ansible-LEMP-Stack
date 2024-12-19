@@ -40,13 +40,13 @@
 
     - name: Create project folder
       file: 
-        path: /var/www/www.server1.com  # Use 'path' instead of 'dest' for the file module
+        path: /var/www/www.server1.com  
         state: directory
 
     - name: Copy WordPress files
       command: 
         cmd: cp -a /tmp/wordpress/. /var/www/www.server1.com 
-        creates: /var/www/www.server1.com/wp-settings.php  # Adjusted for correct indentation
+        creates: /var/www/www.server1.com/wp-settings.php  
 
 
   #create dedicated MySQL database user
